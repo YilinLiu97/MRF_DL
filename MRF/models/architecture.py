@@ -2570,6 +2570,19 @@ class FNN(nn.Module):
         T2 = self.model_T2(input)
         return torch.cat([T1, T2], 1)
     
+class AutoEncoder(nn.Module):
+    def __init__(self, opt, input_nc, output_nc, ngf=64, norm_layer=nn.BatchNorm2d, use_dropout=False, gpu_ids=[]):
+        super(autoencoder, self).__init__()
+        self.input_nc = input_nc
+        self.output_nc = output_nc
+        self.ngf = ngf
+        self.gpu_ids = gpu_ids    
+        
+        # norm_layer = None
+        if norm_layer == None:
+            use_bias = True
+            
+        
 
 class SQ_module(nn.Module):
     def __init__(self, opt, input_nc, output_nc, ngf=64, norm_layer=nn.BatchNorm2d, use_dropout=False, gpu_ids=[]):
