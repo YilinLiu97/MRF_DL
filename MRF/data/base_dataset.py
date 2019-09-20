@@ -87,7 +87,12 @@ class BaseDataset(data.Dataset):
         return {k:v.copy() for k,v in sample.items()}
 
     def extractPatch(self, patch_i_1, patch_i_2, patch_i_3, patchSize, sample):
-        return {k:v[:, patch_i_1:patch_i_1+patchSize, patch_i_2:patch_i_2+patchSize, patch_i_3+patchSize] for k,v in sample.items()}
+        img, label, mask = sample['input_G'], sample['label_G'], sample['mask']
+        img_patch = img[:, patch_i_1:patch_i_1+patchSize, patch_i_2:patch_i_2+patchSize, patch_i_3+patchSize] 
+        label_patch = label[:, patch_i_1:patch_i_1+patchSize, patch_i_2:patch_i_2+patchSize]
+        mask_patch = mask[:, patch_i_1:patch_i_1+patchSize, patch_i_2:patch_i_2+patchSize]
+        sample['input_G'], sample['label_G'], sample['mask'] = img_patch, label_patch, mask_patch
+        return sample
 
     def filter_patch_pos(self, mask, patchSize):
         imgSize = mask.shape[1]
@@ -223,13 +228,13 @@ class BaseDataset(data.Dataset):
     def get_patch(self, data):
         patchSize = self.patchSize
         time_start = time.time()
-        patch_i_1, patch_i_2 = self.filter_patch_pos(data['mask'], patchSize)
+        patch_i_1, patch_i_2, patch_i_3 = self.filter_patch_pos(data['mask'], patchSize)
         sample = {}
         sample['mask'], sample['input_G'], sample['label_G'] = (
             data['mask'],
             data['imMRF'],
             data['Tmap'])
-        sample = self.extractPatch(patch_i_1, patch_i_2, patchSize, sample)
+        sample = self.extractPatch(patch_i_1, patch_i_2, patch_i_3, patchSize, sample)
         return sample
 
     def __len__(self):
