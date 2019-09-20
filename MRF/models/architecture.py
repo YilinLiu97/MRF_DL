@@ -4,6 +4,7 @@ import functools
 from .EDSR_models.rcan import RCAN, RCAB
 from .block import *
 from .weights_init import *
+from module import SpatioTemporalConv
 
 
 # Defines the generator that consists of Resnet blocks between a few
@@ -920,62 +921,49 @@ class Unet_3ds_struc(nn.Module):
         model = {}
 
         model['down1'] = [
-            nn.Conv2d(self.input_nc, self.ngf, kernel_size=3, padding=1, bias=use_bias),
-            norm_layer(self.ngf),
-            nn.ReLU(True),
-            
+            SpatioTemporalConv(input_nc, self.ngf, kernel_size=3, stride=1, padding=1)            
             ]
         self.down1 = nn.Sequential(*model['down1'])
 
         model['down2'] = [
-            nn.MaxPool2d(2), 
-            nn.Conv2d(self.ngf, self.ngf*2, kernel_size=3, padding=1, bias=use_bias),
-            norm_layer(self.ngf*2),
-            nn.ReLU(True),
-            
+            nn.MaxPool3d(2), 
+            SpatioTemporalConv(self.ngf, self.ngf*2, kernel_size=3, stride=1, padding=1)
             ]
         self.down2 = nn.Sequential(*model['down2'])
 
         model['down3'] = [
-            nn.MaxPool2d(2), 
-            nn.Conv2d(self.ngf*2, self.ngf*4, kernel_size=3, padding=1, bias=use_bias),
-            norm_layer(self.ngf*4),
-            nn.ReLU(True),
-            
+            nn.MaxPool3d(2), 
+            SpatioTemporalConv(self.ngf*2, self.ngf*4, kernel_size=3, stride=1, padding=1)
+
             ]
         self.down3 = nn.Sequential(*model['down3'])
 
 
         model['b'] = [
-            nn.MaxPool2d(2), 
-            nn.Conv2d(self.ngf*4, self.ngf*8, kernel_size=3, padding=1, bias=use_bias),
-            norm_layer(self.ngf*8),
-            nn.ReLU(True),
-            
-            nn.ConvTranspose2d(self.ngf*8, self.ngf*4, kernel_size=2, stride=2)
+            nn.MaxPool3d(2), 
+            SpatioTemporalConv(self.ngf*4, self.ngf*8, kernel_size=3, stride=1, padding=1),
+ 
+
+            nn.ConvTranspose3d(self.ngf*8, self.ngf*4, kernel_size=2, stride=2)
             # norm_layer(self.ngf*2),
             # nn.ReLU(True)
             ]
         self.b = nn.Sequential(*model['b'])
 
         model['up3'] = [
-            nn.Conv2d(self.ngf*8, self.ngf*4, kernel_size=3, padding=1, bias=use_bias),
-            norm_layer(self.ngf*4),
-            nn.ReLU(True),
-            
-            nn.ConvTranspose2d(self.ngf*4, self.ngf*2, kernel_size=2, stride=2)
+            SpatioTemporalConv(self.ngf*8, self.ngf*4, kernel_size=3, stride=1, padding=1),
+
+            nn.ConvTranspose3d(self.ngf*4, self.ngf*2, kernel_size=2, stride=2)
             # norm_layer(self.ngf),
             # nn.ReLU(True)
             ]
         self.up3 = nn.Sequential(*model['up3'])
-        
+
 
         model['up2'] = [
-            nn.Conv2d(self.ngf*4, self.ngf*2, kernel_size=3, padding=1, bias=use_bias),
-            norm_layer(self.ngf*2),
-            nn.ReLU(True),
-            
-            nn.ConvTranspose2d(self.ngf*2, self.ngf, kernel_size=2, stride=2)
+            SpatioTemporalConv(self.ngf*4, self.ngf*2, kernel_size=3, stride=1, padding=1),
+
+            nn.ConvTranspose3d(self.ngf*2, self.ngf, kernel_size=2, stride=2)
             # norm_layer(self.ngf),
             # nn.ReLU(True)
             ]
@@ -983,10 +971,8 @@ class Unet_3ds_struc(nn.Module):
 
 
         model['up1'] = [
-            nn.Conv2d(self.ngf*2, self.ngf, kernel_size=3, padding=1, bias=use_bias),
-            norm_layer(self.ngf),
-            nn.ReLU(True),
-            nn.Conv2d(self.ngf, self.output_nc, kernel_size=3, padding=1)
+            SpatioTemporalConv(self.ngf*2, self.ngf, kernel_size=3, stride=1, padding=1),
+            SpatioTemporalConv(self.ngf, output_nc, kernel_size=3, stride=1, padding=1)
             # norm_layer(self.output_nc),
             # nn.ReLU(True)
             ]
@@ -2570,19 +2556,7 @@ class FNN(nn.Module):
         T2 = self.model_T2(input)
         return torch.cat([T1, T2], 1)
     
-class AutoEncoder(nn.Module):
-    def __init__(self, opt, input_nc, output_nc, ngf=64, norm_layer=nn.BatchNorm2d, use_dropout=False, gpu_ids=[]):
-        super(autoencoder, self).__init__()
-        self.input_nc = input_nc
-        self.output_nc = output_nc
-        self.ngf = ngf
-        self.gpu_ids = gpu_ids    
-        
-        # norm_layer = None
-        if norm_layer == None:
-            use_bias = True
-            
-        
+          
 
 class SQ_module(nn.Module):
     def __init__(self, opt, input_nc, output_nc, ngf=64, norm_layer=nn.BatchNorm2d, use_dropout=False, gpu_ids=[]):
