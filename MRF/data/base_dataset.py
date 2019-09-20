@@ -86,17 +86,18 @@ class BaseDataset(data.Dataset):
     def np_copy(self, sample):
         return {k:v.copy() for k,v in sample.items()}
 
-    def extractPatch(self, patch_i_1, patch_i_2, patchSize, sample):
-        return {k:v[:, patch_i_1:patch_i_1+patchSize, patch_i_2:patch_i_2+patchSize] for k,v in sample.items()}
+    def extractPatch(self, patch_i_1, patch_i_2, patch_i_3, patchSize, sample):
+        return {k:v[:, patch_i_1:patch_i_1+patchSize, patch_i_2:patch_i_2+patchSize, patch_i_3+patchSize] for k,v in sample.items()}
 
     def filter_patch_pos(self, mask, patchSize):
         imgSize = mask.shape[1]
         while True:
             patch_i_1 = random.randint(0, imgSize - patchSize)
             patch_i_2 = random.randint(0, imgSize - patchSize)
-            mask_t = mask[:, patch_i_1:patch_i_1+patchSize, patch_i_2:patch_i_2+patchSize]
+            patch_i_3 = random.randint(0, imgSize - patchSize)
+            mask_t = mask[:, patch_i_1:patch_i_1+patchSize, patch_i_2:patch_i_2+patchSize, patch_i_3:patch_i_3+patchSize]
             if mask_t.sum() > 0.01 * mask_t.size:
-                return patch_i_1, patch_i_2
+                return patch_i_1, patch_i_2, patch_i_3
 
     def preprocess_imMRF(self, imMRF, flip=True):
         if flip:
