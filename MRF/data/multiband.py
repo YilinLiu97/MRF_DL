@@ -23,7 +23,7 @@ class MRFDataset(BaseDataset):
         self.initialize_base(opt)
 
     def name(self):
-        return 'single_Dataset_2'
+        return 'multiband'
     
 
     def get_paths(self):
@@ -33,7 +33,7 @@ class MRFDataset(BaseDataset):
             d_root = '/data/yilinliu/multiband/simulated'
         person_path = ['180114', '180124', '180131', '180131_2', '180202']
         slice_N = [6,6,6,6,6]
-        # slice_N = [1,1,1,1,1,1,1]
+        # slice_N = [1,1,1,1,1,1]
         test_i = self.opt.test_i
         if self.opt.set_type == 'train':
             person = list(range(1,test_i))+list(range(test_i+1,7))
