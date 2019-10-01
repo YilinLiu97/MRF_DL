@@ -24,6 +24,7 @@ class BaseDataset(data.Dataset):
         self.opt = opt
         self.set_type = opt.set_type
         self.device = torch.device('cuda' if self.opt.gpu_ids else 'cpu')
+        self.n_Network = opt.n_Network
 
         if opt.isTrain:
             self.augmentation = opt.augmentation
@@ -164,7 +165,7 @@ class BaseDataset(data.Dataset):
         return data
 
     def read_imMRF(self, file):
-        return file['imMRF'][0:self.opt.input_nc//2]
+        return file['imMRF'][0:self.opt.input_nc//2][:,:,:,self.n_Network]
 
     def read_Tmap(self, file):
         return file['t1big'][:], file['t2big'][:]
